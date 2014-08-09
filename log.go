@@ -4,15 +4,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Extended log pkg for go.
+// Extended logging pkg for go.
 // Output log format:
 //	 "LEVEL: DATE TIME: GOROUTINE_ID: FILE:LINE: LOG_CONTENT\n"
 // eg:
-//	 "NOTICE: 08-06 10:45:19.598: 12345: bvc.go:100: hello world"
+//	 "NOTICE: 08-06 10:45:19.598: 12: bvc.go:100: hello world"
 package logex
 
 import (
     "errors"
+    "fmt"
 	"io"
 	"os"
 	"runtime"
@@ -20,6 +21,7 @@ import (
 	"time"
 )
 
+// Log Level type: FATAL > WARNING > NOTICE > TRACE > DEBUG
 type Level uint
 const (
     NONE    Level = iota
@@ -32,13 +34,20 @@ const (
 )
 var levelStr = [...]string{"NONE", "FATAL", "WARNING", "NOTICE", "TRACE", "DEBUG"}
 
+// A Logger represents an active logging object that generates lines of
+// output to an io.Writer.  Each logging operation makes a single call to
+// the Writer's Write method.  A Logger can be used simultaneously from
+// multiple goroutines; it guarantees to serialize access to the Writer.
 type Logger struct {
 	mu  sync.Mutex
 	out io.Writer
-	buf []byte     // for accumulating text to write
 	enabled [LEVEL_MAX]bool // enabled log level
+	buf []byte     // for accumulating text to write
 }
 
+// New creates a new Logger.
+// The level variable sets the logger level. And the out variable sets the
+// destination to which log data will be written.
 func New(level Level, out io.Writer) *Logger {
     l := &Logger{out: out}
     for i := FATAL; i <= level && i < LEVEL_MAX; i++ {
@@ -47,8 +56,32 @@ func New(level Level, out io.Writer) *Logger {
     return l
 }
 
-var logger = New(DEBUG, os.Stderr)
+// The default logger
+var std = New(DEBUG, os.Stderr)
 
+// SetOutput sets the output destination for the standard logger.
+func SetOutput(w io.Writer) {
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	std.out = w
+}
+
+// SetLevel sets the default logger level.
+func SetLevel(level Level) {
+    std.mu.Lock()
+    defer std.mu.Unlock()
+    for i := FATAL; i <= DEBUG; i++ {
+        std.enabled[i] = i <= level
+    }
+}
+
+// Output writes the output for a logging event.
+// The level variable indicates the output message level. Note, only message
+// level greater than or equals to logger level can be written. Calldepth is
+// used to recover the PC and is provided for generality, although at the
+// moment on all pre-defined paths it will be 2. The string s contains the text
+// to print. A newline is appended if the last character of s is not already a
+// newline.
 func (l *Logger) Output(level Level, calldepth int, s string) error {
     if level > DEBUG {
         return errors.New("wrong log level")
@@ -93,7 +126,7 @@ func (l *Logger) formatPrefix(level Level, t time.Time, file string, line int) {
     *buf = append(*buf, ':')
     itoa(buf, sec, 2)
     *buf = append(*buf, '.')
-    itoa(buf, t.Nanosecond()/1e3, 3)
+    itoa(buf, t.Nanosecond()/1e6, 3)
     *buf = append(*buf, ": "...)
 
     itoa(buf, int(goid()), -1)
@@ -134,3 +167,54 @@ func itoa(buf *[]byte, i int, wid int) {
 
 // Goid returns the id of goroutine, defined in ./goid.c
 func goid() int32
+
+// Fatalf is equivalent to Printf() for FATAL-level log.
+func Fatalf(format string, v ...interface{}) {
+	std.Output(FATAL, 2, fmt.Sprintf(format, v...))
+}
+
+// Fatal is equivalent to Print() for FATAL-level log.
+func Fatal(v ...interface{}) {
+	std.Output(FATAL, 2, fmt.Sprintln(v...))
+}
+
+// Warningf is equivalent to Printf() for WARNING-level log.
+func Warningf(format string, v ...interface{}) {
+	std.Output(WARNING, 2, fmt.Sprintf(format, v...))
+}
+
+// Waring is equivalent to Print() for WARING-level log.
+func Warning(v ...interface{}) {
+	std.Output(WARNING, 2, fmt.Sprintln(v...))
+}
+
+// Noticef is equivalent to Printf() for NOTICE-level log.
+func Noticef(format string, v ...interface{}) {
+	std.Output(NOTICE, 2, fmt.Sprintf(format, v...))
+}
+
+// Notice is equivalent to Print() for NOTICE-level log.
+func Notice(v ...interface{}) {
+	std.Output(NOTICE, 2, fmt.Sprintln(v...))
+}
+
+// Tracef is equivalent to Printf() for TRACE-level log.
+func Tracef(format string, v ...interface{}) {
+	std.Output(TRACE, 2, fmt.Sprintf(format, v...))
+}
+
+// Trace is equivalent to Print() for TRACE-level log.
+func Trace(v ...interface{}) {
+	std.Output(TRACE, 2, fmt.Sprintln(v...))
+}
+
+// Debugf is equivalent to Printf() for DEBUG-level log.
+func Debugf(format string, v ...interface{}) {
+	std.Output(DEBUG, 2, fmt.Sprintf(format, v...))
+}
+
+// Debug is equivalent to Print() for DEBUG-level log.
+func Debug(v ...interface{}) {
+	std.Output(DEBUG, 2, fmt.Sprintln(v...))
+}
+
