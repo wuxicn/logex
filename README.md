@@ -9,6 +9,8 @@ Most importantly, it output goroutine-id in log line. output example:
 
 ## Example
 
+  * example.go:
+
     ``` go
     // The very basic usage of logex pkg
     package main
