@@ -4,6 +4,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Output log to files.
+// By default it writes to xxx.log file and saves xxx.log to xxx.log.<date> and
+// opens an new xxx.log file when an new day begins. And it will also remove
+// log files 7 days ago. Log file name, output dir and log file lifetime can be
+// customized.
 package logex
 
 import (

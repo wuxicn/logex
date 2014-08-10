@@ -1,0 +1,6 @@
+TRACE: 08-10 13:29:14.531: 1: log_to_file.go:27: this is trace message
+NOTICE: 08-10 13:29:14.531: 1: log_to_file.go:28: log levels: FATAL > WARNING > NOTICE > TRACE > DEBUG
+WARNING: 08-10 13:29:14.531: 1: log_to_file.go:29: this is warning message
+TRACE: 08-10 13:35:41.905: 1: log_to_file.go:27: this is trace message
+NOTICE: 08-10 13:35:41.905: 1: log_to_file.go:28: log levels: FATAL > WARNING > NOTICE > TRACE > DEBUG
+WARNING: 08-10 13:35:41.905: 1: log_to_file.go:29: this is warning message
