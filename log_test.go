@@ -82,6 +82,37 @@ func TestLogLevel(t *testing.T) {
     }
 }
 
+func TestOutputGoid(t *testing.T) {
+	buf := new(bytes.Buffer)
+	SetOutput(buf)
+	SetLevel(DEBUG)
+
+    gid := strconv.Itoa(int(goid()))
+    Fatal("abc")
+    if err := checkLogGoid(buf, gid); err != nil {
+        t.Error(err)
+    }
+
+    c := make(chan bool)
+    var gid2 string = "nil"
+    go func() {
+        defer func() {
+            c <- true
+        }()
+        gid2 = strconv.Itoa(int(goid()))
+        if gid == gid2 {
+            t.Fatalf("wrong gid in goroutine: gid=%q gid2=%q", gid, gid2)
+        }
+        buf.Reset()
+        Fatal("def")
+        if err := checkLogGoid(buf, gid2); err != nil {
+            fmt.Printf("gid=%q gid2=%q buf=%q\n", gid, gid2, buf)
+            t.Error(err)
+        }
+    }()
+    <- c
+}
+
 // check log output line
 // line eg: "FATAL", "08-09 17:03:11.994", "3", "log_test.go:24", "hello world\n"
 func check(b *bytes.Buffer, level Level, lineno int, msg string) error {
@@ -97,7 +128,7 @@ func check(b *bytes.Buffer, level Level, lineno int, msg string) error {
 
     gid := strconv.Itoa(int(goid()))
     if gid != a[2] {
-        return errors.New(fmt.Sprintf("expect goid=%q but actually is %q",
+        return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
             gid, a[2]))
     }
 
@@ -110,6 +141,20 @@ func check(b *bytes.Buffer, level Level, lineno int, msg string) error {
     if msg != a[4] {
         return errors.New(fmt.Sprintf("expect msg=%q but actually is %q",
             msg, a[4]))
+    }
+
+    return nil
+}
+
+func checkLogGoid(b *bytes.Buffer, gid string) error {
+    a := strings.SplitN(b.String(), ": ", 5)
+    if len(a) != 5 {
+        return errors.New("wrong log line format")
+    }
+
+    if gid != a[2] {
+        return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
+            gid, a[2]))
     }
 
     return nil
