@@ -9,6 +9,7 @@ Most importantly, it output goroutine-id in log line. output example:
 
 ## Example
 
+    ``` go
     // The very basic usage of logex pkg
     package main
 
@@ -35,7 +36,7 @@ Most importantly, it output goroutine-id in log line. output example:
         logex.Warning("this is warning message")
         logex.Fatal("all logs will output to os.Stderr by default")
     }
-
+    ```
 
 ## TODO
 
