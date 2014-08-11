@@ -53,12 +53,12 @@ func checkFile(f string, level Level, lineno int, msg string) error {
     }
 
     gid := strconv.Itoa(int(goid()))
-    if gid != a[2] {
+    if gid != a[2][2:] {
         return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
-            gid, a[2]))
+            gid, a[2][2:]))
     }
 
-    s := fmt.Sprintf("file_logger_test.go:%d", lineno)
+    s := fmt.Sprintf("file_logger_2_test.go:%d", lineno)
     if s != a[3] {
         return errors.New(fmt.Sprintf("expect file:line=%q but actually is %q",
             s, a[3]))
@@ -71,6 +71,4 @@ func checkFile(f string, level Level, lineno int, msg string) error {
 
     return nil
 }
-
-
 

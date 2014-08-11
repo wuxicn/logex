@@ -6,9 +6,9 @@
 
 // Extended logging pkg for go.
 // Output log format:
-//	 "LEVEL: DATE TIME: GOROUTINE_ID: FILE:LINE: LOG_CONTENT\n"
+//	 "LEVEL: DATE TIME: g=GOROUTINE_ID: FILE:LINE: LOG_CONTENT\n"
 // eg:
-//	 "NOTICE: 08-06 10:45:19.598: 12: bvc.go:100: hello world"
+//	 "NOTICE: 08-06 10:45:19.598: g=12: bvc.go:100: hello world"
 package logex
 
 import (
@@ -127,7 +127,7 @@ func (l *Logger) formatPrefix(level Level, t time.Time, file string, line int) {
     itoa(buf, sec, 2)
     *buf = append(*buf, '.')
     itoa(buf, t.Nanosecond()/1e6, 3)
-    *buf = append(*buf, ": "...)
+    *buf = append(*buf, ": g="...)
 
     itoa(buf, int(goid()), -1)
     *buf = append(*buf, ": "...)

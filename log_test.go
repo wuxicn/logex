@@ -9,11 +9,11 @@ package logex
 import (
     "bytes"
     "errors"
-	"fmt"
+    "fmt"
     "runtime"
     "strings"
     "strconv"
-	"testing"
+    "testing"
 )
 
 func TestNormalOutput(t *testing.T) {
@@ -127,9 +127,9 @@ func check(b *bytes.Buffer, level Level, lineno int, msg string) error {
     }
 
     gid := strconv.Itoa(int(goid()))
-    if gid != a[2] {
+    if gid != a[2][2:] {
         return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
-            gid, a[2]))
+            gid, a[2][2:]))
     }
 
     s := fmt.Sprintf("log_test.go:%d", lineno)
@@ -152,9 +152,9 @@ func checkLogGoid(b *bytes.Buffer, gid string) error {
         return errors.New("wrong log line format")
     }
 
-    if gid != a[2] {
+    if gid != a[2][2:] {
         return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
-            gid, a[2]))
+            gid, a[2][2:]))
     }
 
     return nil
