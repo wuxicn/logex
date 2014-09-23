@@ -52,6 +52,8 @@ func SetUpFileLogger(logdir, prefix string, checker LogChecker) error {
     logger.logdir = absdir
     logger.logfile = fmt.Sprintf("%s/%s.log", absdir, prefix)
     if checker != nil {
+        logger.checker = checker
+    } else {
         logger.checker = DailyChecker
     }
 
