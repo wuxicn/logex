@@ -12,8 +12,8 @@
 package logex
 
 import (
-    "errors"
-    "fmt"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -23,15 +23,17 @@ import (
 
 // Log Level type: FATAL > WARNING > NOTICE > TRACE > DEBUG
 type Level uint
+
 const (
-    NONE    Level = iota
-    FATAL
-    WARNING
-    NOTICE
-    TRACE
-    DEBUG
-    LEVEL_MAX
+	NONE Level = iota
+	FATAL
+	WARNING
+	NOTICE
+	TRACE
+	DEBUG
+	LEVEL_MAX
 )
+
 var levelStr = [...]string{"NONE", "FATAL", "WARNING", "NOTICE", "TRACE", "DEBUG"}
 
 // A Logger represents an active logging object that generates lines of
@@ -39,21 +41,21 @@ var levelStr = [...]string{"NONE", "FATAL", "WARNING", "NOTICE", "TRACE", "DEBUG
 // the Writer's Write method.  A Logger can be used simultaneously from
 // multiple goroutines; it guarantees to serialize access to the Writer.
 type Logger struct {
-	mu  sync.Mutex
-	out io.Writer
+	mu      sync.Mutex
+	out     io.Writer
 	enabled [LEVEL_MAX]bool // enabled log level
-	buf []byte     // for accumulating text to write
+	buf     []byte          // for accumulating text to write
 }
 
 // New creates a new Logger.
 // The level variable sets the logger level. And the out variable sets the
 // destination to which log data will be written.
 func New(level Level, out io.Writer) *Logger {
-    l := &Logger{out: out}
-    for i := FATAL; i <= level && i < LEVEL_MAX; i++ {
-        l.enabled[i] = true
-    }
-    return l
+	l := &Logger{out: out}
+	for i := FATAL; i <= level && i < LEVEL_MAX; i++ {
+		l.enabled[i] = true
+	}
+	return l
 }
 
 // The default logger
@@ -68,11 +70,11 @@ func SetOutput(w io.Writer) {
 
 // SetLevel sets the default logger level.
 func SetLevel(level Level) {
-    std.mu.Lock()
-    defer std.mu.Unlock()
-    for i := FATAL; i <= DEBUG; i++ {
-        std.enabled[i] = i <= level
-    }
+	std.mu.Lock()
+	defer std.mu.Unlock()
+	for i := FATAL; i <= DEBUG; i++ {
+		std.enabled[i] = i <= level
+	}
 }
 
 // Output writes the output for a logging event.
@@ -83,17 +85,17 @@ func SetLevel(level Level) {
 // to print. A newline is appended if the last character of s is not already a
 // newline.
 func (l *Logger) Output(level Level, calldepth int, s string) error {
-    if level > DEBUG {
-        return errors.New("wrong log level")
-    } else if !l.enabled[level] {
-        return nil
-    }
+	if level > DEBUG {
+		return errors.New("wrong log level")
+	} else if !l.enabled[level] {
+		return nil
+	}
 
-    _, file, line, ok := runtime.Caller(calldepth)
-    if !ok {
-        file = "???"
-        line = 0
-    }
+	_, file, line, ok := runtime.Caller(calldepth)
+	if !ok {
+		file = "???"
+		line = 0
+	}
 	now := time.Now()
 
 	l.mu.Lock()
@@ -110,39 +112,39 @@ func (l *Logger) Output(level Level, calldepth int, s string) error {
 }
 
 func (l *Logger) formatPrefix(level Level, t time.Time, file string, line int) {
-    var buf *[]byte = &l.buf
-    *buf = append(*buf, levelStr[level]...)
-    *buf = append(*buf, ": "...)
+	var buf *[]byte = &l.buf
+	*buf = append(*buf, levelStr[level]...)
+	*buf = append(*buf, ": "...)
 
-    _, month, day := t.Date()
-    itoa(buf, int(month), 2)
-    *buf = append(*buf, '-')
-    itoa(buf, day, 2)
-    *buf = append(*buf, ' ')
-    hour, min, sec := t.Clock()
-    itoa(buf, hour, 2)
-    *buf = append(*buf, ':')
-    itoa(buf, min, 2)
-    *buf = append(*buf, ':')
-    itoa(buf, sec, 2)
-    *buf = append(*buf, '.')
-    itoa(buf, t.Nanosecond()/1e6, 3)
-    *buf = append(*buf, ": g="...)
+	_, month, day := t.Date()
+	itoa(buf, int(month), 2)
+	*buf = append(*buf, '-')
+	itoa(buf, day, 2)
+	*buf = append(*buf, ' ')
+	hour, min, sec := t.Clock()
+	itoa(buf, hour, 2)
+	*buf = append(*buf, ':')
+	itoa(buf, min, 2)
+	*buf = append(*buf, ':')
+	itoa(buf, sec, 2)
+	*buf = append(*buf, '.')
+	itoa(buf, t.Nanosecond()/1e6, 3)
+	*buf = append(*buf, ": g="...)
 
-    itoa(buf, int(goid()), -1)
-    *buf = append(*buf, ": "...)
+	itoa(buf, int(goid()), -1)
+	*buf = append(*buf, ": "...)
 
-    short := file
-    for i := len(file) - 1; i > 0; i-- {
-        if file[i] == '/' {
-            short = file[i+1:]
-            break
-        }
-    }
-    *buf = append(*buf, short...)
-    *buf = append(*buf, ':')
-    itoa(buf, line, -1)
-    *buf = append(*buf, ": "...)
+	short := file
+	for i := len(file) - 1; i > 0; i-- {
+		if file[i] == '/' {
+			short = file[i+1:]
+			break
+		}
+	}
+	*buf = append(*buf, short...)
+	*buf = append(*buf, ':')
+	itoa(buf, line, -1)
+	*buf = append(*buf, ": "...)
 }
 
 // Cheap integer to fixed-width decimal ASCII.  Give a negative width to avoid zero-padding.
@@ -217,4 +219,3 @@ func Debugf(format string, v ...interface{}) {
 func Debug(v ...interface{}) {
 	std.Output(DEBUG, 2, fmt.Sprintln(v...))
 }
-

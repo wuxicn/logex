@@ -11,31 +11,31 @@ import "time"
 import "github.com/wuxicn/logex"
 
 func main() {
-    logex.SetLevel(logex.NOTICE)
-    logex.Debug("this message won't show")
-    logex.Trace("this message won't show neither")
-    logex.Notice("hi, pi is:", 3.1415926)
-    logex.Warning("this is warning message")
-    logex.Fatal("all logs will output to os.Stderr by default")
+	logex.SetLevel(logex.NOTICE)
+	logex.Debug("this message won't show")
+	logex.Trace("this message won't show neither")
+	logex.Notice("hi, pi is:", 3.1415926)
+	logex.Warning("this is warning message")
+	logex.Fatal("all logs will output to os.Stderr by default")
 
-    d, _ := time.ParseDuration("10ms")
+	d, _ := time.ParseDuration("10ms")
 
-    c := make(chan bool)
-    go func() {
-        logex.Notice("note the third field of log line is the goroutine-id")
-        time.Sleep(d)
-        logex.Notice("this log is in another goroutine differs from main goroutine")
-        c <- true
-    }()
+	c := make(chan bool)
+	go func() {
+		logex.Notice("note the third field of log line is the goroutine-id")
+		time.Sleep(d)
+		logex.Notice("this log is in another goroutine differs from main goroutine")
+		c <- true
+	}()
 
-    f()
+	f()
 
-    time.Sleep(d)
-    logex.Notice("in main")
+	time.Sleep(d)
+	logex.Notice("in main")
 
-    <- c
+	<-c
 }
 
 func f() {
-    logex.Notice("log in f() function")
+	logex.Notice("log in f() function")
 }

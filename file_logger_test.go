@@ -7,10 +7,10 @@
 package logex
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 	//"testing"
-    //"time"
+	//"time"
 )
 
 /* TODO: need fix this.
@@ -47,22 +47,21 @@ func TestClearLogs(t *testing.T) {
 */
 
 func writeFile(path, s string) {
-    f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-    if err != nil {
-        fmt.Printf("ERROR: open file %s for write failed: %v\n", path, err)
-        os.Exit(255)
-    }
-    f.WriteString(s)
-    f.Sync()
-    f.Close()
-    if !fileExists(path) {
-        fmt.Printf("ERROR: file %s not exists\n", path)
-        os.Exit(255)
-    }
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("ERROR: open file %s for write failed: %v\n", path, err)
+		os.Exit(255)
+	}
+	f.WriteString(s)
+	f.Sync()
+	f.Close()
+	if !fileExists(path) {
+		fmt.Printf("ERROR: file %s not exists\n", path)
+		os.Exit(255)
+	}
 }
 
 func fileExists(path string) bool {
-    _, err := os.Stat(path)
-    return err == nil || os.IsExist(err)
+	_, err := os.Stat(path)
+	return err == nil || os.IsExist(err)
 }
-

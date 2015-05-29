@@ -8,23 +8,23 @@
 package main
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 )
 
 import "github.com/wuxicn/logex"
 
 func main() {
-    if err := logex.SetUpFileLogger("./log", "example", nil); err != nil {
-        fmt.Println("ERROR:", err)
-        os.Exit(255)
-    }
-    logex.SetLevel(logex.TRACE)
+	if err := logex.SetUpFileLogger("./log", "example", nil); err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(255)
+	}
+	logex.SetLevel(logex.TRACE)
 
-    fmt.Println("all logs will write to ./log/example.log file")
+	fmt.Println("all logs will write to ./log/example.log file")
 
-    logex.Debug("this message won't show")
-    logex.Trace("this is trace message")
-    logex.Notice("log levels: FATAL > WARNING > NOTICE > TRACE > DEBUG")
-    logex.Warning("this is warning message")
+	logex.Debug("this message won't show")
+	logex.Trace("this is trace message")
+	logex.Notice("log levels: FATAL > WARNING > NOTICE > TRACE > DEBUG")
+	logex.Warning("this is warning message")
 }

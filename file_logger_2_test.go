@@ -7,68 +7,67 @@
 package logex
 
 import (
-    "errors"
-    "io/ioutil"
-    "fmt"
-    "os"
-    "runtime"
-    "strings"
-    "strconv"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"runtime"
+	"strconv"
+	"strings"
 	"testing"
-    "time"
+	"time"
 )
 
 func TestNormalFileLogger(t *testing.T) {
-    f := "test_normal_file_logger"
-    os.Remove("./log/" + f + ".log")
+	f := "test_normal_file_logger"
+	os.Remove("./log/" + f + ".log")
 
-    err := SetUpFileLogger("./log", f, func(now *time.Time, logfile *string) bool {
-        return false
-    })
-    if err != nil {
-        t.Fatal("set up error:", err)
-    }
+	err := SetUpFileLogger("./log", f, func(now *time.Time, logfile *string) bool {
+		return false
+	})
+	if err != nil {
+		t.Fatal("set up error:", err)
+	}
 
-    _, _, line, _ := runtime.Caller(0)
-    Notice("abc")
-    if err := checkFile(f, NOTICE, line + 1, "abc\n"); err != nil {
-        t.Fatal(err)
-    }
+	_, _, line, _ := runtime.Caller(0)
+	Notice("abc")
+	if err := checkFile(f, NOTICE, line+1, "abc\n"); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func checkFile(f string, level Level, lineno int, msg string) error {
-    b, err := ioutil.ReadFile("./log/" + f + ".log")
-    if err != nil {
-        return err
-    }
+	b, err := ioutil.ReadFile("./log/" + f + ".log")
+	if err != nil {
+		return err
+	}
 
-    a := strings.SplitN(string(b), ": ", 5)
-    if len(a) != 5 {
-        return errors.New("wrong log line format")
-    }
+	a := strings.SplitN(string(b), ": ", 5)
+	if len(a) != 5 {
+		return errors.New("wrong log line format")
+	}
 
-    if levelStr[level] != a[0] {
-        return errors.New(fmt.Sprintf("expect level=%q but actually is %q",
-            levelStr[level], a[0]))
-    }
+	if levelStr[level] != a[0] {
+		return errors.New(fmt.Sprintf("expect level=%q but actually is %q",
+			levelStr[level], a[0]))
+	}
 
-    gid := strconv.Itoa(int(goid()))
-    if gid != a[2][2:] {
-        return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
-            gid, a[2][2:]))
-    }
+	gid := strconv.Itoa(int(goid()))
+	if gid != a[2][2:] {
+		return errors.New(fmt.Sprintf("expect gid=%q but actually is %q",
+			gid, a[2][2:]))
+	}
 
-    s := fmt.Sprintf("file_logger_2_test.go:%d", lineno)
-    if s != a[3] {
-        return errors.New(fmt.Sprintf("expect file:line=%q but actually is %q",
-            s, a[3]))
-    }
+	s := fmt.Sprintf("file_logger_2_test.go:%d", lineno)
+	if s != a[3] {
+		return errors.New(fmt.Sprintf("expect file:line=%q but actually is %q",
+			s, a[3]))
+	}
 
-    if msg != a[4] {
-        return errors.New(fmt.Sprintf("expect msg=%q but actually is %q",
-            msg, a[4]))
-    }
+	if msg != a[4] {
+		return errors.New(fmt.Sprintf("expect msg=%q but actually is %q",
+			msg, a[4]))
+	}
 
-    return nil
+	return nil
 }
-
